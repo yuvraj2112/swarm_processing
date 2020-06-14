@@ -9,13 +9,13 @@ oppDirection = {'n': 's', 'ne': 'sw', 'e': 'w', 'se': 'nw', 's': 'n', 'sw': 'ne'
 class robot:
     def __init__(self, id, x, y):
         self.ID = id
-        self.x = x
-        self.y = y
+        self.x = y
+        self.y = x
         self.nextX = 0
         self.nextY = 0
         self.prevX = x
         self.prevY = y
-        self.dir = directions[5]
+        self.dir = directions[random.randrange(1,8)]
         self.randomMove = True
         self.waitingSince = 0
         self.STATUS = 'WAIT'
@@ -168,21 +168,21 @@ class robot:
 
     def getDirCoords(self, dir, x, y):
         if dir == 'n':
-            x, y = x, y - 1
-        elif dir == 's':
-            x, y = x, y + 1
-        elif dir == 'e':
-            x, y = x + 1, y
-        elif dir == 'w':
             x, y = x - 1, y
+        elif dir == 's':
+            x, y = x + 1, y
+        elif dir == 'e':
+            x, y = x, y + 1
+        elif dir == 'w':
+            x, y = x, y - 1
         elif dir == 'ne':
-            x, y = x + 1, y - 1
+            x, y = x - 1, y + 1
         elif dir == 'nw':
             x, y = x - 1, y - 1
         elif dir == 'se':
             x, y = x + 1, y + 1
         elif dir == 'sw':
-            x, y = x - 1, y + 1
+            x, y = x + 1, y - 1
         x = x if x > -1 and x < matrixDim else None
         y = y if y > -1 and y < matrixDim else None
         return x, y

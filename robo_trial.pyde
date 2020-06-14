@@ -8,7 +8,7 @@ def setup():
     global roborobo
     size(840,840)
     background(255)
-    roborobo = RoboClass(50)
+    roborobo = RoboClass(2)
     roborobo.placeObjs()
     global grid
     grid = WallClass(roborobo.grid)# roborobo.grid # WallClass(roborobo.grid)

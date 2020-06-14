@@ -15,27 +15,28 @@ class RoboClass:
         roboMatrixLen = int(round(math.sqrt(n)))
         x, y = 1, 1
         id = 1
-        for row in range(x, roboMatrixLen + x):
-            for col in range(y, roboMatrixLen + y):
-                if row == 1 and col == 1:
-                    self.skip = True
-                    continue
-                robo = robot(id, row, col)
+        for vert in range(x, roboMatrixLen + x):
+            for hori in range(y, roboMatrixLen + y):
+                # if row == 1 and col == 1:
+                #     self.skip = True
+                #     continue
+                print (vert, hori)
+                robo = robot(id, hori, vert)
                 id += 1
                 self.robos.append(robo)
-                self.grid[row][col] = 'x'
+                self.grid[vert][hori] = 'x'
         extras = n - (roboMatrixLen * roboMatrixLen) + 1 if self.skip else n - (roboMatrixLen * roboMatrixLen)
         for extra in range(extras):
-            robo = robot(id, extra + x, roboMatrixLen + y)
+            robo = robot(id, roboMatrixLen + x, extra + y)
             id += 1
             self.robos.append(robo)
-            self.grid[roboMatrixLen + y][extra + x] = 'x'
+            self.grid[extra + y][roboMatrixLen + x] = 'x'
             
     def setWalls(self, grid):
         self.grid = grid
     
     def placeObjs(self):
-        self.grid[1][1] = 'O'
+        # self.grid[1][1] = 'O'
         self.grid[matrixDim - objPlace][matrixDim - objPlace] = 'D'
         
     def showCircle(self):
