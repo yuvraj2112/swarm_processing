@@ -32,3 +32,4 @@ misc/windowsexecutablestub/Release
 *.sdf
 *.suo
 linux/
+Application.macosx/*

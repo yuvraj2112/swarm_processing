@@ -15,13 +15,17 @@ class robot:
         self.nextY = 0
         self.prevX = x
         self.prevY = y
-        self.dir = directions[random.randrange(1,8)]
+        self.dir = random.choice(directions)
         self.randomMove = True
         self.waitingSince = 0
         self.STATUS = 'WAIT'
         fill(5, 130, 200)
         rect(self.y * w + rw, self.x * w + rw, rw, rw)
-        
+    
+    '''
+    Method to move the bot and reset it to wait state
+    (in this case, draws the updated position, deletes the old and resets) 
+    '''
     def update(self):
         if self.STATUS == 'MOVE':
             fill(255)
@@ -39,21 +43,24 @@ class robot:
             stroke(0)
             fill(255,0,0)
             rect(self.y * w + rw, self.x * w + rw, rw, rw)
-        
+    
+    '''
+    Method acting as the central processing unit
+    Calls relevant methods as per the state of the bot
+    Decides what to do next based on return value
+    '''
     def process(self, grid):
         matrix = copy.deepcopy(grid)
-        # look for object
-        nextMove = self.__lookAround(matrix, self.STATUS == 'BROADCAST')
+        # look for object, calculate the next move
+        nextMove = self.__lookAround(matrix)
         if nextMove == None:
-            if self.waitingSince > 100 and self.randomMove == True:
+            if self.randomMove == True:
                 nextMove = None
                 if random.randrange(1, 100) < 11:
                     self.dir = oppDirection[self.dir]
-                    nextMove = self.__lookAround(matrix, lost = True)
-                self.waitingSince = 0
+                    nextMove = self.__lookAround(matrix, forced = True)
                 if nextMove == None:
                     return matrix
-                self.waitingSince = 0
                 self.dir = nextMove[0]
                 self.nextX = nextMove[1][0]
                 self.nextY = nextMove[1][1]
@@ -64,7 +71,6 @@ class robot:
                 matrix[self.x][self.y] = '.'
                 return matrix
             else:
-                self.waitingSince += 1
                 return matrix
         if nextMove[0] == 'Broadcast':
             self.STATUS = 'BROADCAST'
@@ -84,8 +90,11 @@ class robot:
     def display(self):
         fill(0,255,205)
         rect(self.x * w + rw, self.y * w + rw, rw, rw)
-        
-    def __lookAround(self, grid, lost = False):
+    
+    '''
+    Method to map the environment (calls searchNeigh method) and send the map to nextMove method (to calculate next step)
+    '''
+    def __lookAround(self, grid, forced = False):
         weights = {
         "n": 0,
         "e": 0,
@@ -106,50 +115,77 @@ class robot:
         "w": self.searchNeigh(grid, self.x, self.y, 'w'),
         "e": self.searchNeigh(grid, self.x, self.y, 'e'),
         }
-        return self.nextMove(grid, neighbours, weights, lost)
+        return self.nextMove(grid, neighbours, weights, forced)
 
+    '''
+    Method to map the environment (calls searchNeigh method) and send the map to nextMove method (to calculate next step)
+    '''
     def nextMove(self, grid, neigh, weights, forced):
-        # print (neigh)
+        '''
+        Loops through all directions, calculating weights for each.
+        Makes a move in direction which makes most sense
+        '''
         for dir in directions:
+            '''
+            Before else block in Line 146:
+            - If broadcasting or goal found, do not proccess further, return Broadcast
+            - Prototype: If wall in direction, cancel move in the direction - deactivated as not optimum strategy
+            - Assign a standar weight of 5
+            - If no move possible, cancel move in direcction and continue
+            '''
             if (len(neigh[dir]) and neigh[dir][0][2] == 'D'):
                 return ('Broadcast', dir)
             # if len(neigh[dir]) and neigh[dir][0][2] == 'W':
             #     print (neigh[dir])
-                # weights[dir] = -5
+                # weights[dir] = -20
                 # continue
             newCoord = self.getDirCoords(dir, self.x, self.y)
             weights[dir] = 5
             if newCoord[0] == None or newCoord[1] == None or grid[newCoord[0]][newCoord[1]] != '.':
-                weights[dir] = 0
+                weights[dir] = -20
                 continue
             else:
+                '''
+                Assign weights by following strategies:
+                - If no neighbour in opposite direction and random move off - cancel move, continue
+                - ++ Number of neighbours in opposite direction, If same direction as before, and distance from nearest neighbour in opposite direction
+                - -- If direction same as going back, Bot close to a wall
+                '''
                 if (not forced and len(neigh[oppDirection[dir]]) == 0 and (self.x != 0 and self.y != 0)):
-                    weights[dir] = 0
+                    weights[dir] = -20
                     continue
                 if not len(neigh[dir]) and grid[newCoord[0]][newCoord[1]] == '.':
                     weights[dir] += 1
-                if (newCoord[0] == self.prevX) or dir == oppDirection[self.dir]:
+                if not forced and dir == oppDirection[self.dir]:
                     weights[dir] -= 1
-                if self.dir == dir:
+                if not forced and self.dir == dir:
+                    weights[dir] += 1
+                if not forced and self.dir != dir and dir != oppDirection[self.dir]:
                     weights[dir] += 1
                 if len(neigh[dir]) == 0:
                     weights[dir] += 1
                 if len(neigh[oppDirection[dir]]) > 0:
                     weights[dir] += (5 - neigh[oppDirection[dir]][0][3])#1 # neigh[oppDirection[dir]][0][3] / 2 # (5 - neigh[oppDirection[dir]][0][3]) # neigh[oppDirection[dir]][0][3] / 3
                 if len(neigh[dir]) and neigh[dir][0][2] == 'W' and neigh[dir][0][3] < 2:
-                    if neigh[dir][0][3] < 2:
-                         weights[dir] = 0
-                    else:
-                        weights[dir] -= (5 - neigh[dir][0][3])
+                    weights[dir] -= (5 - neigh[dir][0][3])
+                    # if neigh[dir][0][3] < 2:
+                      # weights[dir] = 0
+                    # else:
+                        # weights[dir] -= (5 - neigh[dir][0][3])
+        '''
+        Randomness introducer
+        - Random direction picker if more than 1 optimal directions
+        - If randomness move required by 'forced' parameter: Select direction randomly from the valid pool  
+        '''
         maxi = max(weights.values())
         all_maxes = [ele for ele in weights if weights[ele] == maxi]
         maxi = random.choice(all_maxes)
-        if weights[maxi] < 1:
+        if weights[maxi] == -20:
             return None
-        if random.randrange(1, 100) < 21:
+        if forced:
             newDict = dict()
             for (key, value) in weights.items():
-                if key != maxi and value > 0: # and key != oppDirection[maxi]:
+                if key != maxi and value != -20: # and key != oppDirection[maxi]:
                     newDict[key] = value
                 if len(newDict) > 0:
                     choice = random.choice(list(newDict))
@@ -165,7 +201,10 @@ class robot:
         stroke(0)
         fill(5, 130, 200)
         rect(self.y * w + rw, self.x * w + rw, rw, rw)
-
+    
+    '''
+    Method to get the next x,y-coordinates from given parameter coordinate in the given parameteric direction
+    '''
     def getDirCoords(self, dir, x, y):
         if dir == 'n':
             x, y = x - 1, y
@@ -187,6 +226,14 @@ class robot:
         y = y if y > -1 and y < matrixDim else None
         return x, y
     
+    '''
+    method searchs environment for:
+    - neighbours
+    In reality: Passive IR input will be used to read incoming signal IDs and their distance
+    -obstacles
+    In reality: IR sensor will be used to judge the distance from any obstacle
+    Returns: Set of data including nearest objects type and distance in a given direction
+    '''
     def searchNeigh(self, grid, x, y, dir, distance = 1):
         found = []
         nextX, nextY = self.getDirCoords(dir, x, y)

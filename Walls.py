@@ -24,20 +24,23 @@ def makeSquare(x,y,x1,y1, grid):
 def makeALine(x,y,l,dir,grid):
     for i in range(l):
         if dir == 'v':
-            grid[y][x+i] = 'W'
+            grid[x+i][y] = 'W'
         else:
-            grid[y+i][x] = 'W'
+            grid[x][y+i] = 'W'
     return grid
     
-
+'''
+  initiates walls in the matrix, marking them as 'W'
+'''
 def WallClass(grid):
     gr = copy.deepcopy(grid)
     gr = makeOuter(gr)
     gr = makeSquare(50,50,60,60,gr)
+    gr = makeSquare(20,10,30,30,gr)
     gr = makeSquare(50,50,60,60,gr)
     gr = makeSquare(50,10,60,25,gr)
     gr = makeSquare(10,50,20,60,gr)
-    gr = makeALine(30,1,25,'h',gr)
+    gr = makeALine(40,30,25,'h',gr)
     gr = makeALine(60,1,25,'h',gr)
-    gr = makeALine(1,10,8,'v',gr)
+    gr = makeALine(1,10,10,'v',gr)
     return gr

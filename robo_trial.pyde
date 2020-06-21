@@ -8,44 +8,37 @@ def setup():
     global roborobo
     size(840,840)
     background(255)
-    roborobo = RoboClass(2)
+    roborobo = RoboClass(50)
     roborobo.placeObjs()
     global grid
-    grid = WallClass(roborobo.grid)# roborobo.grid # WallClass(roborobo.grid)
+    # creates walls in the matrix
+    grid = WallClass(roborobo.grid)
     roborobo.grid = grid
-    # roborobo.setWalls(grid)
     makeWalls()
     # frameRate(10)
-    # noLoop()
 
 def draw():
-    # background(255)
-    # x, y = 0, 0
-    # for row in grid:
-    #     for col in row:
-    #         if col == 'O':
-    #             fill(255, 0, 0)
-    #         elif col == 'D':
-    #             fill(0, 0, 0)
-    #         else:
-    #             fill(255, 255, 255)
-    #         rect(x, y, w, w)
-    #         x = x + w
-    #     y = y + w
-    #     x = 0
-    # background(255, 255, 255)
     makeWalls()
     roborobo.update()
 
+"""
+method is used to draw sensing circle around bots
+"""
 def mousePressed():
     roborobo.showCircle()
 
+"""
+method is used to print steps taken by bots
+"""
 def keyPressed():
   if key == CODED:
     if keyCode == UP:
         roborobo.showSteps()
-#     redraw()
-    
+
+"""
+method is called continuously and draws all the stationary objects
+including the goal, origin (if exists) and walls
+"""
 def makeWalls():
     x, y = 0, 0
     stroke(0)

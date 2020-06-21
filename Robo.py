@@ -2,9 +2,13 @@ from robot_class import robot
 import math
 w = 10
 matrixDim = 84
-objPlace = 20
+objPlaceX = 20
+objPlaceY = 10
 
 class RoboClass:
+    """
+    class constructor is used to initialize bots at the location specified by 'x, y'
+    """
     def __init__(self, n):
         self.steps = 0
         self.found = False
@@ -17,27 +21,22 @@ class RoboClass:
         id = 1
         for vert in range(x, roboMatrixLen + x):
             for hori in range(y, roboMatrixLen + y):
-                # if row == 1 and col == 1:
-                #     self.skip = True
-                #     continue
-                print (vert, hori)
                 robo = robot(id, hori, vert)
                 id += 1
                 self.robos.append(robo)
                 self.grid[vert][hori] = 'x'
         extras = n - (roboMatrixLen * roboMatrixLen) + 1 if self.skip else n - (roboMatrixLen * roboMatrixLen)
         for extra in range(extras):
-            robo = robot(id, roboMatrixLen + x, extra + y)
+            robo = robot(id, extra + y, roboMatrixLen + x)
             id += 1
             self.robos.append(robo)
-            self.grid[extra + y][roboMatrixLen + x] = 'x'
+            self.grid[roboMatrixLen + x][extra + y] = 'x'
             
     def setWalls(self, grid):
         self.grid = grid
     
     def placeObjs(self):
-        # self.grid[1][1] = 'O'
-        self.grid[matrixDim - objPlace][matrixDim - objPlace] = 'D'
+        self.grid[matrixDim - objPlaceX][matrixDim - objPlaceY] = 'D'
         
     def showCircle(self):
         for robot in self.robos:
